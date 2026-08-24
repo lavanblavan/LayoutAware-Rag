@@ -145,7 +145,6 @@ python services/rate_retrieval.py --split test
 # Layout vs HDBSCAN chunk demo
 python services/demo_chunk_compare.py
 ```
-
 Reports → `Documents/finetune/export/`
 
 Legacy wrappers (`collect_40_questions.py`, `collect_30_new_questions.py`, etc.) still work but call the unified scripts above.
