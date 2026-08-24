@@ -1,11 +1,20 @@
 """
-Serve the Quill chatbot frontend on port 9000.
+Serve the PaperRAG frontend on port 9010.
 """
 import http.server
-import socketserver
 import os
+import socketserver
+import sys
+import webbrowser
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from utils.session_log import configure_logging, get_logger
+
+log = get_logger(__name__)
 
 PORT = 9010
+URL = f"http://localhost:{PORT}"
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -19,7 +28,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    configure_logging()
     os.chdir(DIR)
-    print(f"Quill frontend running at http://localhost:{PORT}", flush=True)
+    log.info("PaperRAG frontend running at %s", URL)
+    webbrowser.open(URL)
     with socketserver.TCPServer(("0.0.0.0", PORT), Handler) as httpd:
         httpd.serve_forever()

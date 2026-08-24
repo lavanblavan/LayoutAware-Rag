@@ -15,6 +15,9 @@ sys.path.insert(0, str(ROOT))
 from Summarizer.publaynet_model import load_publaynet_model
 from Summarizer.layout_extract import LayoutExtractor
 from settings.Settings import Config
+from utils.session_log import configure_logging, get_logger
+
+log = get_logger(__name__)
 
 
 def main():
@@ -25,7 +28,7 @@ def main():
 
     src = Path(args.input)
     if not src.exists():
-        print("File not found:", src)
+        log.error("File not found: %s", src)
         sys.exit(1)
 
     load_publaynet_model(score_thresh=args.score)
@@ -40,7 +43,7 @@ def main():
 
         images = [Image.open(src).convert("RGB")]
 
-    print(f"Processing {len(images)} page(s)…")
+    log.info("Processing %s page(s)…", len(images))
     text, blocks = extractor.extract_document(images)
 
     out_dir = Path(Config.EXTRACTED_TEXT_PATH)
@@ -48,10 +51,11 @@ def main():
     out_path = out_dir / f"{src.stem}.txt"
     out_path.write_text(text, encoding="utf-8")
 
-    print(f"Done — {len(blocks)} blocks → {out_path}")
+    log.info("Done — %s blocks → %s", len(blocks), out_path)
     if blocks:
-        print(f"Sample [{blocks[0]['type']}]: {blocks[0]['text'][:120]}…")
+        log.info("Sample [%s]: %s…", blocks[0]["type"], blocks[0]["text"][:120])
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

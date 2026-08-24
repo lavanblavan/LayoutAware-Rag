@@ -14,7 +14,7 @@ let pollTimer = null;
 let ready = false;
 let waitingForBackend = false;
 let pollAttempts = 0;
-const MAX_POLL_ATTEMPTS = 45;
+const STATUS_TIMEOUT_MS = 120000;
 const MAX_HISTORY = 5;
 const chatHistory = [];
 
@@ -54,7 +54,7 @@ function setUiStatus({ status, message, documents }) {
 }
 
 async function fetchStatus() {
-  const res = await fetch(`${API}/status`, { signal: AbortSignal.timeout(8000) });
+  const res = await fetch(`${API}/status`, { signal: AbortSignal.timeout(120000) });
   if (!res.ok) throw new Error("Could not reach backend");
   return res.json();
 }

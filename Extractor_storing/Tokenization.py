@@ -2,6 +2,15 @@ from sentence_transformers import SentenceTransformer
 from typing import List, Union
 from nltk.tokenize import sent_tokenize
 import nltk
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from utils.session_log import configure_logging, get_logger
+
+log = get_logger(__name__)
+
 nltk.download('punkt')
 
 class SentenceTokenizer:
@@ -38,6 +47,7 @@ class SentenceTokenizer:
 
 
 if __name__ == "__main__":
+    configure_logging()
     document = """
 Machine learning is a field of artificial intelligence.
 It allows computers to learn from data without being explicitly programmed.
@@ -47,10 +57,9 @@ Sentence Transformers are great for creating vector embeddings.
     tokenizer = SentenceTokenizer()
     sentences, embeddings = tokenizer.embed(document)
 
-    print("📄 Tokenized sentences:")
+    log.info("Tokenized sentences:")
     for s in sentences:
-        print("-", s)
-    
+        log.info("- %s", s)
 
-    print("\n📈 Embeddings shape:", embeddings.shape)
+    log.info("Embeddings shape: %s", embeddings.shape)
  

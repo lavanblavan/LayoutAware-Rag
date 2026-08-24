@@ -22,6 +22,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from settings.Settings import Config
 from Extractor_storing.create_chunks import SemanticChunker
+from utils.session_log import configure_logging, get_logger
+
+log = get_logger(__name__)
 
 DEFAULT_DOC = "01_Foundational_RAG_Lewis_2020"
 EXPORT_DIR = Config.FINETUNE_EXPORT_PATH
@@ -157,7 +160,7 @@ def main():
     text = text_path.read_text(encoding="utf-8")
     chunker = SemanticChunker()
 
-    print(f"Reading {text_path.name} …")
+    log.info("Reading %s …", text_path.name)
     layout = _layout_chunks(chunker, text)
     dense = _hdbscan_chunks(chunker, text, max_sentences=args.hdbscan_sentences)
 
@@ -193,25 +196,23 @@ def main():
     json_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
     _write_markdown(md_path, payload)
 
-    print()
-    print("=" * 60)
-    print("  LAYOUT (new)     vs     HDBSCAN (old)")
-    print("=" * 60)
-    print(f"  {payload['counts']['layout']} chunks          {payload['counts']['hdbscan']} chunks")
-    print()
+    log.info("=" * 60)
+    log.info("  LAYOUT (new)     vs     HDBSCAN (old)")
+    log.info("=" * 60)
+    log.info("  %s chunks          %s chunks", payload["counts"]["layout"], payload["counts"]["hdbscan"])
     for i, row in enumerate(payload["showcase"][:4], start=1):
-        print(f"--- Example {i} ---")
-        print(f"  NEW  [{row.get('layout_index')}] {row.get('layout_heading')}")
-        print(f"       {row.get('layout_preview', '')[:100]}…")
-        print(f"  OLD  [{row.get('hdbscan_index')}] heading={row.get('hdbscan_has_section_heading')}")
-        print(f"       {row.get('hdbscan_starts_with', '')[:100]}…")
-        print()
+        log.info("--- Example %s ---", i)
+        log.info("  NEW  [%s] %s", row.get("layout_index"), row.get("layout_heading"))
+        log.info("       %s…", row.get("layout_preview", "")[:100])
+        log.info("  OLD  [%s] heading=%s", row.get("hdbscan_index"), row.get("hdbscan_has_section_heading"))
+        log.info("       %s…", row.get("hdbscan_starts_with", "")[:100])
 
-    print("Open these files for your recording:")
-    print(f"  {md_path}")
-    print(f"  {json_path}")
-    print(f"  {payload['new_chunks_file']}")
+    log.info("Open these files for your recording:")
+    log.info("  %s", md_path)
+    log.info("  %s", json_path)
+    log.info("  %s", payload["new_chunks_file"])
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

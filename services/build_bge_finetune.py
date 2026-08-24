@@ -21,6 +21,7 @@ from datetime import datetime, timezone
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from utils.session_log import configure_logging, get_logger
 from settings.Settings import Config
 from services.compare_chat import collect_retrieval
 from services.finetune_store import (
@@ -32,6 +33,8 @@ from services.finetune_store import (
     stats,
 )
 from services.retrieval_cache import get_index_store, warmup_retrieval
+
+log = get_logger(__name__)
 
 BGE_QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
 
@@ -149,7 +152,7 @@ def _collect_and_label(top_k: int = 10) -> list[dict]:
     rows = []
 
     for i, (expected_stem, question, split) in enumerate(QUESTION_SET, start=1):
-        print(f"[{i:02d}/25] {question[:70]}…")
+        log.info("[%02d/25] %s…", i, question[:70])
         out = collect_retrieval(question, top_k=top_k, history=[])
         bge_sources = out["bge"]["sources"]
 
@@ -189,7 +192,7 @@ def _collect_and_label(top_k: int = 10) -> list[dict]:
         }
         rows.append(row)
         status = "OK" if label_ok else "CHECK"
-        print(f"         {status} gold={gold_id} val={val_score:.2f} doc={gold_rec.get('stem', '?')}")
+        log.info("         %s gold=%s val=%.2f doc=%s", status, gold_id, val_score, gold_rec.get("stem", "?"))
 
     save_questions(rows)
     return rows
@@ -294,9 +297,10 @@ def main():
 
     result = export_bge_json(labeled)
     result["store"] = stats()
-    print("\n--- BGE finetune export ---")
-    print(json.dumps(result, indent=2))
+    log.info("--- BGE finetune export ---")
+    log.info(json.dumps(result, indent=2))
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

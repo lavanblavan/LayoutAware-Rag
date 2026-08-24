@@ -16,6 +16,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from services.finetune_store import load_corpus
 from utils.torch_win import bootstrap_torch
+from utils.session_log import get_logger
+
+log = get_logger(__name__)
 
 BGE_QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
 DEFAULT_BASE = "BAAI/bge-small-en-v1.5"
@@ -58,24 +61,24 @@ class RetrievalEngine:
         self.id_to_meta = {c["id"]: c for c in corpus}
         self.retrieve_n = retrieve_n
 
-        print(f"Loading base bi-encoder: {base_model}")
+        log.info("Loading base bi-encoder: %s", base_model)
         self.base = SentenceTransformer(base_model)
-        print("Encoding corpus with base BGE…")
+        log.info("Encoding corpus with base BGE…")
         self.base_embs = self._encode_corpus(self.base, self.chunk_texts)
 
         self.finetuned = None
         self.tuned_embs = None
         if finetuned_path and os.path.isdir(finetuned_path):
-            print(f"Loading fine-tuned bi-encoder: {finetuned_path}")
+            log.info("Loading fine-tuned bi-encoder: %s", finetuned_path)
             self.finetuned = SentenceTransformer(finetuned_path)
-            print("Encoding corpus with fine-tuned BGE…")
+            log.info("Encoding corpus with fine-tuned BGE…")
             self.tuned_embs = self._encode_corpus(self.finetuned, self.chunk_texts)
         else:
-            print(f"Fine-tuned model not found (skip): {finetuned_path}")
+            log.warning("Fine-tuned model not found (skip): %s", finetuned_path)
 
         self.reranker = None
         if load_reranker:
-            print(f"Loading cross-encoder reranker: {reranker_model}")
+            log.info("Loading cross-encoder reranker: %s", reranker_model)
             self.reranker = CrossEncoder(reranker_model)
 
     @staticmethod

@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from utils.session_log import configure_logging, get_logger
 from settings.Settings import Config
 from services.rerank_retrieval import (
     DEFAULT_BASE,
@@ -27,6 +28,8 @@ from services.rerank_retrieval import (
     Method,
     RetrievalEngine,
 )
+
+log = get_logger(__name__)
 
 EXPORT_DIR = Config.FINETUNE_EXPORT_PATH
 DEFAULT_REPORT = os.path.join(EXPORT_DIR, "retrieval_rating_report.json")
@@ -194,41 +197,52 @@ def _aggregate(rows: list[dict]) -> dict:
 def _print_summary(report: dict) -> None:
     summary = report["summary"]
     n = summary.get("labeled_questions", 0)
-    print("\n" + "=" * 72)
-    print(f"Retrieval rating — {n} labeled question(s)")
-    print("=" * 72)
-    print(f"{'Method':<22} {'R@1':>6} {'R@3':>6} {'R@5':>6} {'Wins':>6}  Quality (ex/gd/ok/poor)")
-    print("-" * 72)
+    log.info("=" * 72)
+    log.info("Retrieval rating — %s labeled question(s)", n)
+    log.info("=" * 72)
+    log.info("%-22s %6s %6s %6s %6s  Quality (ex/gd/ok/poor)", "Method", "R@1", "R@3", "R@5", "Wins")
+    log.info("-" * 72)
     for method in METHODS:
         m = summary.get("methods", {}).get(method)
         if not m:
             continue
         q = f"{m['excellent']}/{m['good']}/{m['ok']}/{m['poor']}"
-        print(
-            f"{METHOD_LABELS[method]:<22} "
-            f"{m['recall@1']:>6.3f} {m['recall@3']:>6.3f} {m['recall@5']:>6.3f} "
-            f"{m['wins']:>6}  {q}"
+        log.info(
+            "%-22s %6.3f %6.3f %6.3f %6d  %s",
+            METHOD_LABELS[method],
+            m["recall@1"],
+            m["recall@3"],
+            m["recall@5"],
+            m["wins"],
+            q,
         )
 
-    print("\nPer question:")
+    log.info("Per question:")
     for row in report["questions"]:
         qid = row.get("id") or "new"
-        print(f"\n  [{qid}] {row['question'][:70]}")
+        log.info("  [%s] %s", qid, row["question"][:70])
         if not row.get("gold_chunk_ids"):
-            print("    (no gold labels — showing top-1 only)")
+            log.info("    (no gold labels — showing top-1 only)")
         for method in METHODS:
             md = row["methods"][method]
             if md.get("skipped"):
-                print(f"    {METHOD_LABELS[method]:<22} skipped")
+                log.info("    %-22s skipped", METHOD_LABELS[method])
                 continue
             rank = md.get("gold_rank")
             rank_s = str(rank) if rank is not None else "—"
             top1 = md["top1"]["chunk_id"] or "—"
             qual = md.get("quality", "")
             mark = " *" if row.get("winner") == method else ""
-            print(f"    {METHOD_LABELS[method]:<22} rank {rank_s:<3} [{qual:<9}] top1={top1}{mark}")
+            log.info(
+                "    %-22s rank %-3s [%-9s] top1=%s%s",
+                METHOD_LABELS[method],
+                rank_s,
+                qual,
+                top1,
+                mark,
+            )
 
-    print(f"\nReport: {report['report_path']}")
+    log.info("Report: %s", report["report_path"])
 
 
 def rate(
@@ -259,7 +273,7 @@ def rate(
         retrieve_n=retrieve_n,
     )
 
-    print(f"\nRating {len(items)} question(s)…\n")
+    log.info("Rating %s question(s)…", len(items))
     rows = [_rate_question(engine, item, top_k=top_k) for item in items]
     summary = _aggregate(rows)
 
@@ -311,4 +325,5 @@ def main():
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

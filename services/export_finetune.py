@@ -16,6 +16,7 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from utils.session_log import configure_logging, get_logger
 from settings.Settings import Config
 from services.finetune_store import (
     export_training_pairs,
@@ -25,13 +26,15 @@ from services.finetune_store import (
     write_questions_template,
 )
 
+log = get_logger(__name__)
+
 
 def backfill_from_chunks_dir():
     """Load existing Documents/chunks/*_chunks.json into finetune corpus."""
     chunks_dir = Config.CHUNKS_PATH
     if not os.path.isdir(chunks_dir):
-        print(f"No chunks folder: {chunks_dir}")
-        print("Run: python services/library_pipeline.py")
+        log.warning("No chunks folder: %s", chunks_dir)
+        log.info("Run: python services/library_pipeline.py")
         return 0
 
     count = 0
@@ -48,10 +51,10 @@ def backfill_from_chunks_dir():
             texts = [c.get("text", "") for c in texts]
         save_document_chunks(stem, pdf, texts)
         count += 1
-        print(f"  {stem}: {len(texts)} chunks")
+        log.info("  %s: %s chunks", stem, len(texts))
 
     rebuild_corpus()
-    print(f"Backfilled {count} document(s) → {Config.CORPUS_JSONL}")
+    log.info("Backfilled %s document(s) → %s", count, Config.CORPUS_JSONL)
     return count
 
 
@@ -68,13 +71,14 @@ def main():
         backfill_from_chunks_dir()
         write_questions_template()
     elif args.command == "stats":
-        print(json.dumps(stats(), indent=2))
+        log.info(json.dumps(stats(), indent=2))
     elif args.command == "export":
-        print(json.dumps(export_training_pairs(), indent=2))
+        log.info(json.dumps(export_training_pairs(), indent=2))
     elif args.command == "template":
         path = write_questions_template()
-        print(f"Template written: {path}")
+        log.info("Template written: %s", path)
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

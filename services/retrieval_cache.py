@@ -14,7 +14,10 @@ import numpy as np
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from settings.Settings import Config
+from utils.session_log import get_logger
 from utils.torch_win import bootstrap_torch
+
+log = get_logger(__name__)
 
 _embedding_models: dict[str, object] = {}
 _store: Optional["LibraryIndexStore"] = None
@@ -25,7 +28,7 @@ def get_embedding_model(model_name: str):
         bootstrap_torch()
         from sentence_transformers import SentenceTransformer
 
-        print(f"Loading embedding model (once): {model_name}")
+        log.info("Loading embedding model (once): %s", model_name)
         _embedding_models[model_name] = SentenceTransformer(model_name)
     return _embedding_models[model_name]
 
@@ -111,7 +114,7 @@ class LibraryIndexStore:
         if self.ready and not force:
             return self.stats()
 
-        print("Warming retrieval cache (embedding models + FAISS indexes)...")
+        log.info("Warming retrieval cache (embedding models + FAISS indexes)...")
         self.summary.clear()
         self.extracted.clear()
         self.models.clear()
@@ -136,10 +139,14 @@ class LibraryIndexStore:
                 counts[model_key]["extracted"] += 1
 
         self.ready = True
-        print(
+        log.info(
             "Retrieval cache ready — "
-            f"MiniLM: {counts['minilm']['summary']} summary / {counts['minilm']['extracted']} extracted, "
-            f"BGE: {counts['bge']['summary']} summary / {counts['bge']['extracted']} extracted."
+            "MiniLM: %s summary / %s extracted, "
+            "BGE: %s summary / %s extracted.",
+            counts['minilm']['summary'],
+            counts['minilm']['extracted'],
+            counts['bge']['summary'],
+            counts['bge']['extracted'],
         )
         return self.stats()
 

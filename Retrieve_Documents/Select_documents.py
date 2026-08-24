@@ -5,7 +5,10 @@ from pathlib import Path
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from utils.session_log import configure_logging, get_logger
 from Retrieve_Documents.Retriever import Retriever
+
+log = get_logger(__name__)
 from Retrieve_Documents.Reranker import ReRanker
 from settings.Settings import Config as settings_module
 
@@ -28,7 +31,7 @@ class SelectDocuments:
         self.reranker = ReRanker()
 
     def load_all_indexes(self):
-        print("📥 Scanning for FAISS indexes...")
+        log.info("Scanning for FAISS indexes...")
 
         files = os.listdir(self.summary_faiss_folder)
 
@@ -49,17 +52,17 @@ class SelectDocuments:
             ]
 
             if not candidates:
-                print(f"⚠️ No meta found for index: {idx_file}")
+                log.warning("No meta found for index: %s", idx_file)
                 continue
 
             index_path = os.path.join(self.summary_faiss_folder, idx_file)
             meta_path = os.path.join(self.summary_faiss_folder, candidates[0])
 
-            print(f"  🔗 Matched: {idx_file}  ↔  {candidates[0]}")
+            log.info("  Matched: %s  ↔  %s", idx_file, candidates[0])
 
             index_pairs.append((possible_prefix, index_path, meta_path))
 
-        print(f"✅ Found {len(index_pairs)} valid index/meta pairs.")
+        log.info("Found %s valid index/meta pairs.", len(index_pairs))
         return index_pairs
 
 
@@ -73,7 +76,7 @@ class SelectDocuments:
             results = self.retriever.flat_search(query, top_k)
             return results
         except Exception as e:
-            print(f"⚠️ Error retrieving from {index_path}: {e}")
+            log.warning("Error retrieving from %s: %s", index_path, e)
             return []
 
     def select_documents(self, query, top_k_docs=3, top_k_chunks=5):
@@ -92,10 +95,10 @@ class SelectDocuments:
         all_indexes = self.load_all_indexes()
         document_scores = []
 
-        print(f"\n🔍 Running retrieval across {len(all_indexes)} documents...\n")
+        log.info("Running retrieval across %s documents...", len(all_indexes))
 
         for base, index_path, meta_path in all_indexes:
-            print(f"📘 Searching in ➜ {base}")
+            log.info("Searching in ➜ %s", base)
 
             retrieved_chunks = self.retrieve_for_file(
                 query, index_path, meta_path, top_k=top_k_chunks
@@ -123,11 +126,12 @@ class SelectDocuments:
 
         return document_scores[:top_k_docs]
 if __name__ == "__main__":
+    configure_logging()
     selector = SelectDocuments()
     query = "What is the police arrest procedure?"
     top_docs = selector.select_documents(query, top_k_docs=2, top_k_chunks=5)
 
-    print("\n=== Top Retrieved Documents ===")
+    log.info("=== Top Retrieved Documents ===")
     for doc in top_docs:
-        print(f"Document: {doc['document']}, Score: {doc['score']:.4f}")
-        print(f"Best Chunk: {doc['best_chunk']}\n")
+        log.info("Document: %s, Score: %.4f", doc["document"], doc["score"])
+        log.info("Best Chunk: %s", doc["best_chunk"])

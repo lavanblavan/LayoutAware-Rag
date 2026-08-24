@@ -6,7 +6,10 @@ from pathlib import Path
 # Allow imports from project root
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from utils.session_log import configure_logging, get_logger
 from settings.Settings import Config as settings_module
+
+log = get_logger(__name__)
 from Extractor_storing.embedd_chunks import EmbedChunks
 
 
@@ -37,14 +40,14 @@ class MainStoring:
         ]
 
         if not txt_files:
-            print(f"⚠️ No .txt files found in {input_folder}")
+            log.warning("No .txt files found in %s", input_folder)
             return
 
-        print(f"📄 Found {len(txt_files)} text files in {input_folder}")
+        log.info("Found %s text files in %s", len(txt_files), input_folder)
 
         for filename in txt_files:
             file_path = os.path.join(input_folder, filename)
-            print(f"\n📘 Processing {filename} ...")
+            log.info("Processing %s ...", filename)
 
             # Read file
             with open(file_path, "r", encoding="utf-8") as f:
@@ -60,23 +63,24 @@ class MainStoring:
             # Save index + metadata
             self.embedder.save_index(index_out, meta_out)
 
-            print(f"✅ Saved FAISS index & meta for {filename}")
+            log.info("Saved FAISS index & meta for %s", filename)
 
     def run(self):
-        print("\n========================= 📌 BUILDING EXTRACTED TEXT EMBEDDINGS =========================")
+        log.info("BUILDING EXTRACTED TEXT EMBEDDINGS")
         self.build_faiss_for_folder(
             input_folder=self.extracted_text_folder,
             output_folder=self.extracted_faiss_path
         )
 
-        print("\n========================= 📌 BUILDING SUMMARY EMBEDDINGS =========================")
+        log.info("BUILDING SUMMARY EMBEDDINGS")
         self.build_faiss_for_folder(
             input_folder=self.summary_text_folder,
             output_folder=self.summary_faiss_path
         )
 
-        print("\n🎉 All FAISS indexes created successfully!")
+        log.info("All FAISS indexes created successfully!")
 
 
 if __name__ == "__main__":
+    configure_logging()
     MainStoring().run()

@@ -20,7 +20,10 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from utils.session_log import configure_logging, get_logger
 from settings.Settings import Config
+
+log = get_logger(__name__)
 
 DEFAULT_TRAIN = os.path.join(Config.FINETUNE_EXPORT_PATH, "bge_train.jsonl")
 DEFAULT_OUTPUT = os.path.join(
@@ -83,12 +86,13 @@ def train(
     if not rows:
         raise ValueError(f"No training rows in {train_path}")
 
-    print(f"Loaded {len(rows)} training pairs from {train_path}")
-    print(f"Base model: {base_model}")
-    print(f"Output: {output_path}")
+    log.info("Loaded %s training pairs from %s", len(rows), train_path)
+    log.info("Base model: %s", base_model)
+    log.info("Output: %s", output_path)
     if len(rows) < 50:
-        print(
-            f"Note: only {len(rows)} pairs — use 1 epoch, low LR, mnrl loss to avoid overfitting."
+        log.info(
+            "Note: only %s pairs — use 1 epoch, low LR, mnrl loss to avoid overfitting.",
+            len(rows),
         )
 
     examples = build_examples(rows, loss_name=loss_name)
@@ -99,11 +103,11 @@ def train(
         train_loss = losses.TripletLoss(
             model, distance_metric=losses.TripletDistanceMetric.COSINE
         )
-        print("Loss: TripletLoss (query, positive, hard negative)")
+        log.info("Loss: TripletLoss (query, positive, hard negative)")
     else:
         # In-batch negatives — usually more stable on tiny datasets
         train_loss = losses.MultipleNegativesRankingLoss(model)
-        print("Loss: MultipleNegativesRankingLoss (in-batch negatives)")
+        log.info("Loss: MultipleNegativesRankingLoss (in-batch negatives)")
 
     loader = DataLoader(examples, shuffle=True, batch_size=batch_size)
     os.makedirs(output_path, exist_ok=True)
@@ -131,8 +135,8 @@ def train(
     with open(os.path.join(output_path, "finetune_meta.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2)
 
-    print(f"\nSaved fine-tuned model to: {output_path}")
-    print("Next: rebuild FAISS indexes or set bge model path in Settings.py")
+    log.info("Saved fine-tuned model to: %s", output_path)
+    log.info("Next: rebuild FAISS indexes or set bge model path in Settings.py")
     return output_path
 
 
@@ -166,4 +170,5 @@ def main():
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

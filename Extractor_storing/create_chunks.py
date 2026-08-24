@@ -1,8 +1,16 @@
 import re
+import os
+import sys
 import nltk
 from nltk.tokenize import sent_tokenize
 import hdbscan
 import numpy as np
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from utils.session_log import configure_logging, get_logger
+
+log = get_logger(__name__)
 
 nltk.download('punkt')
 
@@ -244,7 +252,7 @@ class SemanticChunker:
         flush()
         result = self._pack_sections(sections, split_long=False)
         if result[2]:
-            print(f"Layout chunks: {len(result[2])} sections (1 chunk per heading/table)")
+            log.info("Layout chunks: %s sections (1 chunk per heading/table)", len(result[2]))
         return result if result[2] else None
 
     def run_layout_strict(self, text):
@@ -279,7 +287,7 @@ class SemanticChunker:
             return None
         result = self._pack_sections(sections, split_long=False)
         if result[2]:
-            print(f"Legal-structure chunks: {len(result[2])} fine / {len(result[1])} sections")
+            log.info("Legal-structure chunks: %s fine / %s sections", len(result[2]), len(result[1]))
         return result if result[2] else None
 
     def run(self, text, strict_layout=True):
@@ -293,18 +301,19 @@ class SemanticChunker:
             else:
                 sentences = self.preprocess_text(text)
                 coarse_chunks, sorted_clusters = self.cluster_sentences(sentences, min_cluster_size=2)
-                print(f"🧠 Total sentences after preprocessing: {len(sentences)}")
-                print(f"📚 Number of coarse clusters: {len(coarse_chunks)}")
+                log.info("Total sentences after preprocessing: %s", len(sentences))
+                log.info("Number of coarse clusters: %s", len(coarse_chunks))
                 fine_chunks = self.create_chunks(sorted_clusters)
                 all_chunk_groups = self.create_chunks_group(sorted_clusters)
 
         for i, chunk in enumerate(fine_chunks):
-            print(f"\nChunk {i+1}: {chunk[:120]}{'...' if len(chunk) > 120 else ''}")
+            log.info("Chunk %s: %s%s", i + 1, chunk[:120], "..." if len(chunk) > 120 else "")
 
         return sentences, coarse_chunks, fine_chunks, all_chunk_groups
 
 
 if __name__ == "__main__":
+    configure_logging()
     file_path = r"C:\Users\Lavan\Desktop\Chatbot\Document_Summarizer\Document_Summarizer\Documents\Police\LK_Police_Ordinance_summary.txt"
     with open(file_path, "r", encoding="utf-8") as file:
         content = file.read()
@@ -316,4 +325,4 @@ if __name__ == "__main__":
     model = SentenceTransformer('all-MiniLM-L6-v2')
     fine_chunk_embeddings = model.encode(fine_chunks, normalize_embeddings=True)
 
-    print(f"\n✅ Created {len(fine_chunks)} fine-grained chunks ready for indexing.")
+    log.info("Created %s fine-grained chunks ready for indexing.", len(fine_chunks))

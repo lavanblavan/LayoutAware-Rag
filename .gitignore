@@ -29,6 +29,7 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
 
 # Training checkpoints & large layout weights (auto-downloaded on first run)
 checkpoints/

@@ -26,6 +26,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from settings.Settings import Config
 from services.finetune_store import load_corpus
 from utils.torch_win import bootstrap_torch
+from utils.session_log import configure_logging, get_logger
+
+log = get_logger(__name__)
 
 BGE_PREFIX = "Represent this sentence for searching relevant passages: "
 DEFAULT_FINETUNED = os.path.normpath(
@@ -97,17 +100,17 @@ def compare(
     bootstrap_torch()
     from sentence_transformers import SentenceTransformer
 
-    print(f"Corpus: {len(corpus)} chunks from {len({c['stem'] for c in corpus})} documents")
-    print(f"Base:       {base_model}")
-    print(f"Fine-tuned: {finetuned_path}")
-    print(f"Evaluating {len(pairs)} questions (split={split})\n")
+    log.info("Corpus: %s chunks from %s documents", len(corpus), len({c["stem"] for c in corpus}))
+    log.info("Base:       %s", base_model)
+    log.info("Fine-tuned: %s", finetuned_path)
+    log.info("Evaluating %s questions (split=%s)", len(pairs), split)
 
     base = SentenceTransformer(base_model)
     tuned = SentenceTransformer(finetuned_path)
 
-    print("Encoding corpus with BASE model…")
+    log.info("Encoding corpus with BASE model…")
     base_embs = _encode_corpus(base, chunk_texts)
-    print("Encoding corpus with FINE-TUNED model…")
+    log.info("Encoding corpus with FINE-TUNED model…")
     tuned_embs = _encode_corpus(tuned, chunk_texts)
 
     questions = [p["question"] for p in pairs]
@@ -155,8 +158,8 @@ def compare(
         rows.append(row)
 
         arrow = " ↑" if row["improved"] else (" ↓" if row["regressed"] else " =")
-        print(f"{p.get('id')}  gold rank {b_rank} → {a_rank}{arrow}")
-        print(f"  {p['question'][:75]}")
+        log.info("%s  gold rank %s → %s%s", p.get("id"), b_rank, a_rank, arrow)
+        log.info("  %s", p["question"][:75])
 
     n = len(pairs)
     summary = {
@@ -179,13 +182,13 @@ def compare(
     with open(EXPORT_COMPARE, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2, ensure_ascii=False)
 
-    print("\n" + "=" * 55)
-    print(f"{'':18} {'Base BGE':>12} {'Fine-tuned':>12}")
-    print(f"{'Recall@1':18} {summary['metrics']['base']['recall@1']:>12.3f} {summary['metrics']['finetuned']['recall@1']:>12.3f}")
-    print(f"{'Recall@3':18} {summary['metrics']['base']['recall@3']:>12.3f} {summary['metrics']['finetuned']['recall@3']:>12.3f}")
-    print(f"{'Recall@5':18} {summary['metrics']['base']['recall@5']:>12.3f} {summary['metrics']['finetuned']['recall@5']:>12.3f}")
-    print(f"\nImproved: {summary['metrics']['improved']}  Regressed: {summary['metrics']['regressed']}")
-    print(f"Report: {EXPORT_COMPARE}")
+    log.info("=" * 55)
+    log.info("%18s %12s %12s", "", "Base BGE", "Fine-tuned")
+    log.info("%-18s %12.3f %12.3f", "Recall@1", summary["metrics"]["base"]["recall@1"], summary["metrics"]["finetuned"]["recall@1"])
+    log.info("%-18s %12.3f %12.3f", "Recall@3", summary["metrics"]["base"]["recall@3"], summary["metrics"]["finetuned"]["recall@3"])
+    log.info("%-18s %12.3f %12.3f", "Recall@5", summary["metrics"]["base"]["recall@5"], summary["metrics"]["finetuned"]["recall@5"])
+    log.info("Improved: %s  Regressed: %s", summary["metrics"]["improved"], summary["metrics"]["regressed"])
+    log.info("Report: %s", EXPORT_COMPARE)
     return summary
 
 
@@ -200,4 +203,5 @@ def main():
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

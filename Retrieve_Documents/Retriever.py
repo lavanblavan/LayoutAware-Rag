@@ -3,6 +3,10 @@ import numpy as np
 import faiss
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
+from utils.session_log import get_logger
+
+log = get_logger(__name__)
+
 class Retriever:
     """
     Loads FAISS index and metadata to perform retrieval (flat or hierarchical).
@@ -20,13 +24,13 @@ class Retriever:
         self.group_embeddings = None
 
     def load_index(self, index_path, meta_path):
-        print("Loading FAISS index and metadata...")
+        log.info("Loading FAISS index and metadata...")
         self.index = faiss.read_index(index_path)
         data = np.load(meta_path, allow_pickle=True)
         self.fine_chunks = data['fine_chunks']
         self.group_embeddings = data['group_embeddings']
         self.all_chunk_groups = data['all_chunk_groups']
-        print(f"Loaded {len(self.fine_chunks)} fine chunks and {len(self.all_chunk_groups)} groups.")
+        log.info("Loaded %s fine chunks and %s groups.", len(self.fine_chunks), len(self.all_chunk_groups))
 
     def flat_search(self, query, top_k=5):
         if self.index is None:

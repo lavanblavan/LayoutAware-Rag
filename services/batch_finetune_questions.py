@@ -21,8 +21,11 @@ import urllib.request
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from utils.session_log import configure_logging, get_logger
 from services.compare_chat import collect_retrieval
 from services.finetune_store import add_question, load_questions, stats
+
+log = get_logger(__name__)
 
 API = os.getenv("RAG_API", "http://localhost:9091")
 
@@ -76,11 +79,11 @@ def run_batch(dry_run: bool = False, with_answers: bool = False) -> dict:
     for i, (question, split) in enumerate(QUESTIONS, start=1):
         key = question.strip().lower()
         if key in existing:
-            print(f"[{i:02d}/20] skip (already stored): {question[:60]}…")
+            log.info("[%02d/20] skip (already stored): %s…", i, question[:60])
             results.append({"question": question, "status": "skipped"})
             continue
 
-        print(f"[{i:02d}/20] {question}")
+        log.info("[%02d/20] %s", i, question)
         if dry_run:
             results.append({"question": question, "status": "dry_run"})
             continue
@@ -101,7 +104,7 @@ def run_batch(dry_run: bool = False, with_answers: bool = False) -> dict:
                 source="auto_bge_top1",
             )
             elapsed = round(time.time() - t0, 1)
-            print(f"         ok ({elapsed}s) gold={gold[0] if gold else 'none'}")
+            log.info("         ok (%ss) gold=%s", elapsed, gold[0] if gold else "none")
             results.append({
                 "question": question,
                 "status": "ok",
@@ -110,7 +113,7 @@ def run_batch(dry_run: bool = False, with_answers: bool = False) -> dict:
                 "elapsed_s": elapsed,
             })
         except Exception as e:
-            print(f"         ERROR: {e}")
+            log.error("         ERROR: %s", e)
             results.append({"question": question, "status": "error", "error": str(e)})
 
     summary = stats()
@@ -135,9 +138,10 @@ def main():
     args = parser.parse_args()
 
     summary = run_batch(dry_run=args.dry_run, with_answers=args.with_answers)
-    print("\n--- Finetune store ---")
-    print(json.dumps(summary, indent=2))
+    log.info("--- Finetune store ---")
+    log.info(json.dumps(summary, indent=2))
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

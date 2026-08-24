@@ -30,6 +30,9 @@ from services.compare_chat import (
 from services.finetune_store import load_corpus
 from services.library_pipeline import load_library_state
 from utils.torch_win import bootstrap_torch
+from utils.session_log import get_logger
+
+log = get_logger(__name__)
 
 BGE_PREFIX = "Represent this sentence for searching relevant passages: "
 
@@ -77,19 +80,19 @@ class FinetunedCorpusStore:
             for c in corpus
         }
 
-        print(f"[finetuned-chat] Loading base BGE: {self.base_model_name}")
+        log.info("[finetuned-chat] Loading base BGE: %s", self.base_model_name)
         self.base = SentenceTransformer(self.base_model_name)
-        print(f"[finetuned-chat] Encoding {len(self.chunk_texts)} chunks (base)…")
+        log.info("[finetuned-chat] Encoding %s chunks (base)…", len(self.chunk_texts))
         self.base_embs = self._encode(self.base, self.chunk_texts)
 
-        print(f"[finetuned-chat] Loading fine-tuned BGE: {self.finetuned_path}")
+        log.info("[finetuned-chat] Loading fine-tuned BGE: %s", self.finetuned_path)
         self.finetuned = SentenceTransformer(self.finetuned_path)
-        print(f"[finetuned-chat] Encoding {len(self.chunk_texts)} chunks (fine-tuned)…")
+        log.info("[finetuned-chat] Encoding %s chunks (fine-tuned)…", len(self.chunk_texts))
         self.tuned_embs = self._encode(self.finetuned, self.chunk_texts)
 
         self.ready = True
         self.error = None
-        print("[finetuned-chat] Ready — base vs fine-tuned corpus search enabled.")
+        log.info("[finetuned-chat] Ready — base vs fine-tuned corpus search enabled.")
         return self.stats()
 
     @staticmethod
@@ -161,7 +164,7 @@ def warmup_finetuned_chat_async(force: bool = False) -> None:
         except Exception as e:
             store = get_finetuned_store()
             store.error = str(e)
-            print(f"[finetuned-chat] Warmup failed: {e}")
+            log.error("[finetuned-chat] Warmup failed: %s", e)
         finally:
             _warming = False
 

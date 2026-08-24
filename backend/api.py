@@ -65,6 +65,10 @@ from services.finetune_store import (
 
 )
 
+from utils.session_log import configure_logging, get_logger
+
+log = get_logger(__name__)
+
 
 
 
@@ -74,12 +78,13 @@ app = FastAPI(title="DocChat Library Backend", version="2.0")
 
 @app.on_event("startup")
 def _startup_warmup():
+    configure_logging()
     state = load_library_state()
     if state and state.get("status") == "ready":
         try:
             warmup_retrieval()
         except Exception as e:
-            print(f"Retrieval warmup skipped: {e}")
+            log.warning("Retrieval warmup skipped: %s", e)
         warmup_finetuned_chat_async()
 
 

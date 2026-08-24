@@ -17,6 +17,9 @@ import pytesseract
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from Summarizer.publaynet_model import PUBLAYNET_LABELS, load_publaynet_model
+from utils.session_log import get_logger
+
+log = get_logger(__name__)
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
@@ -141,9 +144,9 @@ class LayoutExtractor:
         try:
             self._model = load_publaynet_model(score_thresh=self.score_thresh)
         except Exception as e:
-            print(f"PubLayNet unavailable ({e}).")
+            log.warning("PubLayNet unavailable (%s).", e)
             if os.getenv("ALLOW_TESSERACT_LAYOUT_FALLBACK", "0").lower() in ("1", "true", "yes"):
-                print("Using Tesseract layout fallback.")
+                log.info("Using Tesseract layout fallback.")
             self._model_failed = True
             self._model = None
         return self._model
@@ -316,7 +319,7 @@ class LayoutExtractor:
     def extract_document(self, images) -> tuple[str, List[dict]]:
         all_blocks: List[dict] = []
         for i, image in enumerate(images, start=1):
-            print(f"Layout extract page {i}/{len(images)}…")
+            log.info("Layout extract page %s/%s…", i, len(images))
             all_blocks.extend(self.extract_page(image, page=i))
         return blocks_to_structured_text(all_blocks), all_blocks
 

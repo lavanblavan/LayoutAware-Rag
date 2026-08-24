@@ -15,6 +15,9 @@ from utils.torch_win import bootstrap_torch
 bootstrap_torch()
 
 from Summarizer.publaynet_model import load_publaynet_model  # noqa: E402
+from utils.session_log import get_logger
+
+log = get_logger(__name__)
 
 from settings.Settings import Config
 
@@ -159,7 +162,7 @@ def process_session_document() -> dict:
         "extracted_path": extracted_path,
     })
 
-    print("🧠 Chunking document for summary and index...")
+    log.info("Chunking document for summary and index...")
     _, _, fine_chunks, chunk_groups = embedder.chunker.run(total_text)
     summary = summarizer.find_minititles(
         total_text,

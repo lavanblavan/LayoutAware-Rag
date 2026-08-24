@@ -1,90 +1,18 @@
-# from fileinput import filename
-# import groq
-# import os
-# import sys
-# import time
-# import json
-# import re
-# import threading
-# import asyncio
-# import nest_asyncio
-# import numpy as np
-# from pathlib import Path
-
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-# nest_asyncio.apply()
-
-# import logging
-# logging.basicConfig(level=logging.INFO)
-# from settings.Settings import Config 
-
-# logger = logging.getLogger(__name__)
-# class summary_create:
-#     def __init__(self):
-#         self.api_key = Config.Groq_API_KEY
-#         self.client = groq.Client(api_key=self.api_key)
-#         self.model ="llama-3.3-70b-versatile"
-#         self.array_of_summaries = []
-        
-
-    
-#     def find_minititles(self,text,document_title="No Title Provided"):
-#         """"
-#         Find the sub titles which can be used for summarization in future"""
-#         try:
-#             prompt = (
-#                 "You are a summary maker. Read the text below and break it into "
-#                 "small, meaningful sections of summary for a page. try to get all the context into summary "
-#                 "Each summary should be short, clear, and descriptive. "
-#                 "Return only the numbered list of summary.\n\n"
-#                 "Before putting summary put the heading of the documents if there is any.\n\n"
-#                 f"Document Title: {document_title}\n\n"
-#                 "if there is a same title no need to put it again and again just put subtitles\n\n"
-#                 f"Text:\n{text}"
-#             )
-
-#             response = self.client.chat.completions.create(
-#                 model=self.model,
-#                 messages=[{"role": "user", "content": prompt}],
-#                 temperature=0.5,
-#                 max_tokens=300
-#             )
-
-#             reply = response.choices[0].message.content
-            
-#             print("Subtitles found successfully.",reply)
-#             return reply
-
-#         except Exception as e:
-#             logger.error(f"Error in structured subtitle maker: {e}")
-#             return "Sorry, I couldn't generate subtitles."
-#     def put_summary(self,document_name,summary):
-#         """""
-#         put the summary of the document in json file
-        
-#         """
-#         try:
-#             with open(document_name, 'w') as f:
-#                 f.write(summary)
-#             print(f"Summary saved to {document_name}")
-#         except Exception as e:
-#             logger.error(f"Error saving array to file: {e}")
-#             print("Failed to save array data.")
-
 import os
 import sys
-import logging
 import re
 import nest_asyncio
 from pathlib import Path
 
-nest_asyncio.apply()
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+nest_asyncio.apply()
 
 from settings.Settings import Config
 from services.llm_client import get_llm_client
+from utils.session_log import get_logger
+
+log = get_logger(__name__)
 
 
 class summary_create:
@@ -171,7 +99,7 @@ class summary_create:
                             f"Ollama model {candidate} returned empty summary content."
                         )
                     if candidate != self.model:
-                        logger.info(f"Switched summarizer model to {candidate}")
+                        log.info(f"Switched summarizer model to {candidate}")
                         self.model = candidate
                         self._model_candidates = [candidate] + [
                             m for m in self._model_candidates if m != candidate
@@ -179,13 +107,13 @@ class summary_create:
                     return text
                 except Exception as e:
                     last_error = e
-                    logger.error(f"Ollama chunk error with {candidate}: {e}")
+                    log.error(f"Ollama chunk error with {candidate}: {e}")
                     if self._is_missing_model(e):
                         break
                     message = str(e).lower()
                     if "empty summary content" in message and attempt < 2:
                         tokens = min(4096, tokens + 1000)
-                        logger.warning(
+                        log.warning(
                             f"Retrying {candidate} with max_tokens={tokens}."
                         )
                         continue
@@ -245,13 +173,16 @@ class summary_create:
     def summarize_sections(self, sections, document_title="No Title Provided"):
         """Summarize every layout/index chunk, batched for local model context limits."""
         batches = self._batch_sections(sections)
-        logger.info(
+        log.info(
             f"Summarizing {len(sections)} document chunks in {len(batches)} Ollama batches."
         )
         final_summary = []
         for batch_i, batch in enumerate(batches):
             start_n, end_n = batch[0][0], batch[-1][0]
-            print(f"Summarizing document chunks {start_n}-{end_n} ({batch_i+1}/{len(batches)} Ollama calls)...")
+            log.info(
+                "Summarizing document chunks %s-%s (%s/%s Ollama calls)...",
+                start_n, end_n, batch_i + 1, len(batches),
+            )
             packed = "\n\n".join(item[1] for item in batch)
             prompt = (
                 "You are an expert document summarizer.\n"
@@ -279,16 +210,16 @@ class summary_create:
                 return self.summarize_sections(sections, document_title)
 
             chunks = self.chunk_text_by_tokens(text)
-            logger.info(f"No layout chunks found. Word-split into {len(chunks)} Ollama batches.")
+            log.info(f"No layout chunks found. Word-split into {len(chunks)} Ollama batches.")
             final_summary = []
             for i, chunk in enumerate(chunks):
-                print(f"Processing chunk {i+1}/{len(chunks)}...")
+                log.info("Processing chunk %s/%s...", i + 1, len(chunks))
                 final_summary.append(f"\n--- Summary for Chunk {i+1} ---\n")
                 final_summary.append(self.summarize_chunk(chunk, document_title))
             return "\n".join(final_summary)
 
         except Exception as e:
-            logger.error(f"Error in summarizer pipeline: {e}")
+            log.error(f"Error in summarizer pipeline: {e}")
             raise
 
     # ---------------------------------------------------------------
@@ -298,9 +229,9 @@ class summary_create:
         try:
             with open(document_name, 'w', encoding='utf-8') as f:
                 f.write(summary)
-            print(f"Summary saved to {document_name}")
+            log.info("Summary saved to %s", document_name)
 
         except Exception as e:
-            logger.error(f"Error saving summary: {e}")
-            print("Failed to save summary.")
+            log.error("Error saving summary: %s", e)
+            log.error("Failed to save summary.")
       

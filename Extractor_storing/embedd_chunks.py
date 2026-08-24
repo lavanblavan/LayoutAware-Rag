@@ -7,6 +7,9 @@ bootstrap_torch()
 from sentence_transformers import SentenceTransformer
 from Extractor_storing.Tokenization import SentenceTokenizer
 from Extractor_storing.create_chunks import SemanticChunker  # assumes you have this file separately
+from utils.session_log import configure_logging, get_logger
+
+log = get_logger(__name__)
 
 class EmbedChunks:
     """
@@ -59,7 +62,7 @@ class EmbedChunks:
         if all_chunk_groups is None:
             all_chunk_groups = [[chunk] for chunk in fine_chunks]
 
-        print(f"✅ {len(fine_chunks)} fine-grained chunks created.")
+        log.info("%s fine-grained chunks created.", len(fine_chunks))
         if fine_chunks:
             fine_embeddings = self.embed_texts(fine_chunks)
         else:
@@ -74,14 +77,14 @@ class EmbedChunks:
         self.all_chunk_groups = all_chunk_groups
         self.group_embeddings = self.compute_group_embeddings(all_chunk_groups)
 
-        print(f"📦 FAISS index built with {index.ntotal} vectors.")
+        log.info("FAISS index built with %s vectors.", index.ntotal)
         return index, fine_chunks, all_chunk_groups
 
     def build_index(self, text):
         """
         Full pipeline: chunk → embed → build FAISS index.
         """
-        print("🧠 Chunking document...")
+        log.info("Chunking document...")
         sentences, coarse_chunks, fine_chunks, all_chunk_groups = self.chunker.run(text, strict_layout=True)
         return self.build_index_from_chunks(fine_chunks, all_chunk_groups)
 
@@ -99,9 +102,10 @@ class EmbedChunks:
             group_embeddings=self.group_embeddings,
             all_chunk_groups=np.array(self.all_chunk_groups, dtype=object)
         )
-        print(f"💾 Saved index to {index_path} and metadata to {meta_path}")
+        log.info("Saved index to %s and metadata to %s", index_path, meta_path)
 
 if __name__ == "__main__":
+    configure_logging()
     file_path = r"C:\Users\Lavan\Desktop\Chatbot\Document_Summarizer\Document_Summarizer\Documents\Police\LK_Police_Ordinance_summary.txt"
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
@@ -113,4 +117,4 @@ if __name__ == "__main__":
         index_path="C:\\Users\\Lavan\\Desktop\\Chatbot\\Document_Summarizer\\faiss_index.index",
         meta_path="C:\\Users\\Lavan\\Desktop\\Chatbot\\Document_Summarizer\\meta.npz"
     )
-    print("✅ Index and metadata saved.")
+    log.info("Index and metadata saved.")

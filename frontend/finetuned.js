@@ -86,13 +86,13 @@ async function postJson(path, body) {
 }
 
 async function fetchLibraryStatus() {
-  const res = await fetch(`${API}/status`, { signal: AbortSignal.timeout(8000) });
+  const res = await fetch(`${API}/status`, { signal: AbortSignal.timeout(120000) });
   if (!res.ok) throw new Error("Could not reach backend");
   return res.json();
 }
 
 async function fetchFinetunedStatus() {
-  const res = await fetch(`${API}/chat/finetuned/status`, { signal: AbortSignal.timeout(8000) });
+  const res = await fetch(`${API}/chat/finetuned/status`, { signal: AbortSignal.timeout(120000) });
   if (!res.ok) throw new Error("Fine-tuned status unavailable");
   return res.json();
 }

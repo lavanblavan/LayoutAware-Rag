@@ -25,6 +25,9 @@ bootstrap_torch()
 from Summarizer.publaynet_model import load_publaynet_model  # noqa: E402
 
 from settings.Settings import Config
+from utils.session_log import get_logger
+
+log = get_logger(__name__)
 
 
 def _ensure_dirs():
@@ -131,7 +134,7 @@ def process_one_pdf(pdf_name: str, skip_summary: bool = False) -> dict:
     if not os.path.exists(pdf_path):
         raise FileNotFoundError(pdf_path)
 
-    print(f"\n{'='*60}\n📄 {pdf_name}\n{'='*60}")
+    log.info("%s", f"\n{'='*60}\n📄 {pdf_name}\n{'='*60}")
     total_text, layout_blocks, stem = extract_pdf_layout(pdf_path)
 
     extracted_path = os.path.join(Config.EXTRACTED_TEXT_PATH, f"{stem}.txt")
@@ -156,13 +159,13 @@ def process_one_pdf(pdf_name: str, skip_summary: bool = False) -> dict:
     from services.finetune_store import save_document_chunks, write_questions_template
 
     finetune_records = save_document_chunks(stem, pdf_name, doc_chunks)
-    print(f"✅ {len(doc_chunks)} layout chunks saved (+ {len(finetune_records)} finetune ids)")
+    log.info("%s layout chunks saved (+ %s finetune ids)", len(doc_chunks), len(finetune_records))
 
     summary_path = os.path.join(Config.SUMMARY_OUTPUT_PATH, f"{stem}_summary.txt")
     if skip_summary and os.path.exists(summary_path):
         with open(summary_path, "r", encoding="utf-8") as f:
             summary_text = f.read()
-        print("⏭️  Using existing summary")
+        log.info("Using existing summary")
     else:
         from Summarizer.Summary_creator import summary_create
 
@@ -175,7 +178,7 @@ def process_one_pdf(pdf_name: str, skip_summary: bool = False) -> dict:
         summarizer.put_summary(summary_path, summary_text)
 
     summary_chunks = summary_section_chunks(summary_text)
-    print(f"✅ {len(summary_chunks)} summary sections for indexing")
+    log.info("%s summary sections for indexing", len(summary_chunks))
 
     index_info = {}
     for model_key, model_name in Config.EMBEDDING_MODELS.items():
@@ -186,7 +189,7 @@ def process_one_pdf(pdf_name: str, skip_summary: bool = False) -> dict:
         summary_index = os.path.join(summary_dir, f"{stem}_summary_faiss.index")
         summary_meta = os.path.join(summary_dir, f"{stem}_summary_meta.npz")
 
-        print(f"  🔢 Indexing {model_key} ({model_name})...")
+        log.info("Indexing %s (%s)...", model_key, model_name)
         index_chunks(doc_chunks, model_name, extract_index, extract_meta)
         index_chunks(summary_chunks, model_name, summary_index, summary_meta)
         index_info[model_key] = {
@@ -217,7 +220,7 @@ def process_library(skip_summary: bool = False) -> dict:
         )
 
     _ensure_dirs()
-    print("Loading PubLayNet layout model (once for all PDFs)…")
+    log.info("Loading PubLayNet layout model (once for all PDFs)…")
     load_publaynet_model()
     save_library_state({
         "status": "processing",
@@ -231,7 +234,7 @@ def process_library(skip_summary: bool = False) -> dict:
         try:
             processed.append(process_one_pdf(pdf, skip_summary=skip_summary))
         except Exception as e:
-            print(f"❌ Failed {pdf}: {e}")
+            log.error("Failed %s: %s", pdf, e)
             errors.append({"pdf": pdf, "error": str(e)})
 
     final = {
@@ -260,4 +263,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     result = process_library(skip_summary=args.skip_summary)
-    print(json.dumps({"status": result["status"], "documents": result["documents"]}, indent=2))
+    log.info("%s", json.dumps({"status": result["status"], "documents": result["documents"]}, indent=2))

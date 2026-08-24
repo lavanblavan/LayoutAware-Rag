@@ -2,8 +2,8 @@
 Compare base BGE vs fine-tuned BGE on 30 NEW questions (never seen in training).
 
 Usage:
-  python services/collect_30_new_questions.py
-  python services/label_30_new_questions.py
+  python services/collect_questions.py --set new30
+  python services/label_questions.py --set new30
   python services/compare_new30_finetune.py
 """
 from __future__ import annotations
@@ -16,8 +16,11 @@ from datetime import datetime, timezone
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from utils.session_log import configure_logging, get_logger
 from settings.Settings import Config
 from services.rerank_retrieval import DEFAULT_BASE, DEFAULT_FINETUNED, RetrievalEngine
+
+log = get_logger(__name__)
 
 EVAL_JSON = os.path.join(Config.FINETUNE_EXPORT_PATH, "new30_eval.json")
 REPORT_JSON = os.path.join(Config.FINETUNE_EXPORT_PATH, "new30_base_vs_finetuned.json")
@@ -38,7 +41,7 @@ def compare(finetuned_path: str = DEFAULT_FINETUNED, top_k: int = 5) -> dict:
     if not os.path.exists(EVAL_JSON):
         raise FileNotFoundError(
             f"Missing {EVAL_JSON}\n"
-            "Run: python services/collect_30_new_questions.py && python services/label_30_new_questions.py"
+            "Run: python services/collect_questions.py --set new30 && python services/label_questions.py --set new30"
         )
 
     with open(EVAL_JSON, encoding="utf-8") as f:
@@ -55,7 +58,7 @@ def compare(finetuned_path: str = DEFAULT_FINETUNED, top_k: int = 5) -> dict:
     tuned_hits = {1: 0, 3: 0, 5: 0}
     improved = regressed = same = 0
 
-    print(f"\nComparing {len(items)} new questions (base vs fine-tuned)…\n")
+    log.info("Comparing %s new questions (base vs fine-tuned)…", len(items))
 
     for item in items:
         question = item["question"]
@@ -85,7 +88,7 @@ def compare(finetuned_path: str = DEFAULT_FINETUNED, top_k: int = 5) -> dict:
             same += 1
             arrow = "="
 
-        print(f"{item['id']}  base {b_rank} → tuned {t_rank} {arrow}  {question[:60]}…")
+        log.info("%s  base %s → tuned %s %s  %s…", item["id"], b_rank, t_rank, arrow, question[:60])
 
         rows.append({
             "id": item["id"],
@@ -128,13 +131,13 @@ def compare(finetuned_path: str = DEFAULT_FINETUNED, top_k: int = 5) -> dict:
         json.dump(report, f, indent=2, ensure_ascii=False)
 
     m = report["metrics"]
-    print("\n" + "=" * 55)
-    print(f"{'':18} {'Base BGE':>12} {'Fine-tuned':>12}")
-    print(f"{'Recall@1':18} {m['base']['recall@1']:>12.3f} {m['finetuned']['recall@1']:>12.3f}")
-    print(f"{'Recall@3':18} {m['base']['recall@3']:>12.3f} {m['finetuned']['recall@3']:>12.3f}")
-    print(f"{'Recall@5':18} {m['base']['recall@5']:>12.3f} {m['finetuned']['recall@5']:>12.3f}")
-    print(f"\nImproved: {improved}  Regressed: {regressed}  Unchanged: {same}")
-    print(f"Report: {REPORT_JSON}")
+    log.info("=" * 55)
+    log.info("%18s %12s %12s", "", "Base BGE", "Fine-tuned")
+    log.info("%-18s %12.3f %12.3f", "Recall@1", m["base"]["recall@1"], m["finetuned"]["recall@1"])
+    log.info("%-18s %12.3f %12.3f", "Recall@3", m["base"]["recall@3"], m["finetuned"]["recall@3"])
+    log.info("%-18s %12.3f %12.3f", "Recall@5", m["base"]["recall@5"], m["finetuned"]["recall@5"])
+    log.info("Improved: %s  Regressed: %s  Unchanged: %s", improved, regressed, same)
+    log.info("Report: %s", REPORT_JSON)
     return report
 
 
@@ -147,4 +150,5 @@ def main():
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

@@ -33,6 +33,9 @@ from services.library_pipeline import load_library_state
 from services.finetune_store import enrich_sources, log_retrieval_run
 
 from services.retrieval_cache import get_llm_client, get_index_store, warmup_retrieval
+from utils.session_log import get_logger
+
+log = get_logger(__name__)
 
 
 
@@ -305,7 +308,7 @@ def _llm_answer(
 
     if last_error:
 
-        print(f"LLM answer failed ({label}): {last_error}")
+        log.warning("LLM answer failed (%s): %s", label, last_error)
 
     return fallback
 

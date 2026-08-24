@@ -2,12 +2,16 @@ import sys,os
 from sentence_transformers import CrossEncoder
 import numpy as np
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from utils.session_log import get_logger
+
+log = get_logger(__name__)
 class ReRanker:
     """
     Reranks candidate chunks using a cross-encoder model for fine-grained semantic relevance.
     """
     def __init__(self, model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"):
-        print(f"🔍 Loading ReRanker model: {model_name}")
+        log.info("Loading ReRanker model: %s", model_name)
         self.model = CrossEncoder(model_name)
 
     def rerank(self, query: str, candidates, top_k: int = 5):
@@ -24,7 +28,7 @@ class ReRanker:
         """
         # Handle input type flexibility
         if not candidates:
-            print("⚠️ No candidates provided for reranking.")
+            log.warning("No candidates provided for reranking.")
             return []
 
         # Extract text if provided as (text, score) tuples

@@ -25,6 +25,9 @@ except Exception as exc:
     ) from exc
 
 import layoutparser as lp
+from utils.session_log import get_logger
+
+log = get_logger(__name__)
 
 PUBLAYNET_LABELS = {0: "Text", 1: "Title", 2: "List", 3: "Table", 4: "Figure"}
 MODEL_DIR = Path(__file__).resolve().parent / "models" / "PubLayNet" / "faster_rcnn_R_50_FPN_3x"
@@ -43,7 +46,7 @@ def download_file(name: str, dest: Path, min_size: int) -> Path:
     dest.parent.mkdir(parents=True, exist_ok=True)
     url = f"{HF_BASE}/{name}"
     tmp = dest.with_suffix(dest.suffix + ".part")
-    print(f"Downloading PubLayNet {name}…")
+    log.info("Downloading PubLayNet %s…", name)
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req, timeout=600) as resp, open(tmp, "wb") as f:
         while chunk := resp.read(1024 * 1024):
@@ -68,7 +71,7 @@ def load_publaynet_model(score_thresh: float = 0.55, reuse: bool = True):
     config = download_file("config.yml", MODEL_DIR / "config.yml", min_size=1000)
     weights = download_file("model_final.pth", MODEL_DIR / "model_final.pth", min_size=10_000_000)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Loading PubLayNet on {device}…")
+    log.info("Loading PubLayNet on %s…", device)
     model = lp.Detectron2LayoutModel(
         config_path=str(config),
         model_path=str(weights),
@@ -80,7 +83,7 @@ def load_publaynet_model(score_thresh: float = 0.55, reuse: bool = True):
             device,
         ],
     )
-    print("PubLayNet ready.")
+    log.info("PubLayNet ready.")
     if reuse:
         _cached_model = model
     return model

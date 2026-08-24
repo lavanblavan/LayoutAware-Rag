@@ -1,0 +1,384 @@
+{
+  "instructions": "Add questions under sets.custom.questions (or any set). Then: python services/collect_questions.py --set custom && python services/label_questions.py --set custom",
+  "sets": {
+    "train40": {
+      "title": "40 questions for fine-tuning (8 per paper)",
+      "id_prefix": "q",
+      "default_split": "train",
+      "mode": "finetune",
+      "questions": [
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "How does Lewis et al. combine a neural retriever with a seq2seq generator?",
+          "split": "train"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "What is the difference between RAG-Token and RAG-Sequence?",
+          "split": "train"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "How does RAG perform on open-domain question answering compared to extractive models?",
+          "split": "train"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "What retriever does the original RAG paper use for Wikipedia passages?",
+          "split": "train"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "How does RAG perform on FEVER fact verification?",
+          "split": "test"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "What generator model does the original RAG paper use?",
+          "split": "train"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "How does RAG marginalize over retrieved documents during generation?",
+          "split": "train"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "Can RAG update its knowledge by replacing the non-parametric memory?",
+          "split": "test"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "What are naive RAG, advanced RAG, and modular RAG?",
+          "split": "train"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "What quality scores are used to evaluate RAG systems?",
+          "split": "train"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "Why is RAG robustness important when retrieved documents are noisy?",
+          "split": "train"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "Which RAG tools and frameworks are discussed in the ecosystem survey?",
+          "split": "train"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "What are retrieval, generation, and augmentation in the RAG framework?",
+          "split": "test"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "What are the main steps in naive RAG indexing and retrieval?",
+          "split": "train"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "How does advanced RAG optimize pre-retrieval and post-retrieval?",
+          "split": "train"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "What future research directions does the RAG survey propose?",
+          "split": "test"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "What is Self-RAG and what problem does it solve?",
+          "split": "train"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "What are reflection tokens in Self-RAG?",
+          "split": "train"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "How does Self-RAG decide whether to retrieve additional passages?",
+          "split": "train"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "What is the retrieve-generate-critique loop in Self-RAG?",
+          "split": "train"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "How does Self-RAG improve factuality over standard RAG?",
+          "split": "test"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "What is adaptive retrieval in Self-RAG?",
+          "split": "train"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "How does Self-RAG critique the relevance of retrieved passages?",
+          "split": "train"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "On which benchmarks was Self-RAG evaluated?",
+          "split": "test"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "What is Corrective RAG (CRAG)?",
+          "split": "train"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "What failure modes does CRAG address when retrieval returns bad documents?",
+          "split": "train"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "How does the CRAG retrieval evaluator assign Correct, Incorrect, or Ambiguous?",
+          "split": "train"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "Which datasets were used to evaluate CRAG?",
+          "split": "train"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "What is the decompose-then-recompose algorithm in CRAG?",
+          "split": "test"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "When does CRAG trigger web search instead of internal retrieval?",
+          "split": "train"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "What is knowledge refinement in CRAG?",
+          "split": "train"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "How does Self-CRAG combine CRAG with Self-RAG?",
+          "split": "test"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "What is GraphRAG and how does it differ from standard vector RAG?",
+          "split": "train"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "How does GraphRAG build a knowledge graph from source documents?",
+          "split": "train"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "What are the main pipeline stages in GraphRAG?",
+          "split": "train"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "When does GraphRAG outperform baseline RAG on global sensemaking queries?",
+          "split": "train"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "What evaluation criteria does GraphRAG use for global sensemaking answers?",
+          "split": "test"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "How does GraphRAG generate community summaries from graph communities?",
+          "split": "train"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "What is adaptive benchmarking for GraphRAG evaluation?",
+          "split": "train"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "How does GraphRAG extract entities and relationships from text chunks?",
+          "split": "test"
+        }
+      ]
+    },
+    "new30": {
+      "title": "30 unseen eval questions (6 per paper)",
+      "id_prefix": "nq",
+      "default_split": "new_eval",
+      "mode": "eval",
+      "questions": [
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "How does RAG use DPR dense passage retrieval for Wikipedia?",
+          "split": "new_eval"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "What Jeopardy question generation results does Lewis et al. report?",
+          "split": "new_eval"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "How do human evaluations compare RAG and BART on factuality and specificity?",
+          "split": "new_eval"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "What role does non-parametric memory play in the RAG architecture?",
+          "split": "new_eval"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "How does RAG-Token select different retrieved documents for each output token?",
+          "split": "new_eval"
+        },
+        {
+          "document": "01_Foundational_RAG_Lewis_2020",
+          "question": "What MS-MARCO NLG results does the original RAG paper report?",
+          "split": "new_eval"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "What chunking methods does the RAG survey describe for document indexing?",
+          "split": "new_eval"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "How does query transformation improve RAG before retrieval?",
+          "split": "new_eval"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "What reranking techniques does the RAG survey discuss?",
+          "split": "new_eval"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "How is faithfulness evaluated in RAG systems according to the survey?",
+          "split": "new_eval"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "What fusion methods combine multiple retrievers in advanced RAG?",
+          "split": "new_eval"
+        },
+        {
+          "document": "02_RAG_Survey_Gao_2023",
+          "question": "How does the survey classify augmentation methods during RAG generation?",
+          "split": "new_eval"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "How is the Self-RAG critic model trained?",
+          "split": "new_eval"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "What do IsRel and IsSup reflection tokens mean during Self-RAG inference?",
+          "split": "new_eval"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "How does segment-level beam search work in Self-RAG?",
+          "split": "new_eval"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "How does Self-RAG perform on PubHealth and ASQA datasets?",
+          "split": "new_eval"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "What retrieval-on-demand mechanism does Self-RAG use at inference?",
+          "split": "new_eval"
+        },
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "How does Self-RAG mark retrieved passages as relevant or irrelevant?",
+          "split": "new_eval"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "What is the T5-based retrieval evaluator in CRAG?",
+          "split": "new_eval"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "How does CRAG refine knowledge strips from web search results?",
+          "split": "new_eval"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "What PopQA and FactScore improvements does CRAG report over standard RAG?",
+          "split": "new_eval"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "When does CRAG invoke query rewriting for ambiguous retrieval?",
+          "split": "new_eval"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "What is the oracle upper bound for CRAG with a perfect retrieval evaluator?",
+          "split": "new_eval"
+        },
+        {
+          "document": "04_Corrective_RAG_CRAG_2024",
+          "question": "How does CRAG remove incorrect content from retrieved documents before generation?",
+          "split": "new_eval"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "How does GraphRAG detect communities in the knowledge graph?",
+          "split": "new_eval"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "What map-reduce approach does GraphRAG use for global search queries?",
+          "split": "new_eval"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "What types of claims and entities does GraphRAG extract from text?",
+          "split": "new_eval"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "When does GraphRAG outperform naive RAG on local versus global tasks?",
+          "split": "new_eval"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "What are community summary reports in the GraphRAG pipeline?",
+          "split": "new_eval"
+        },
+        {
+          "document": "05_GraphRAG_Microsoft_2024",
+          "question": "How does GraphRAG use Leiden clustering in its indexing pipeline?",
+          "split": "new_eval"
+        }
+      ]
+    },
+    "custom": {
+      "title": "Your own questions — edit this list",
+      "id_prefix": "cq",
+      "default_split": "eval",
+      "mode": "eval",
+      "questions": [
+        {
+          "document": "03_Self_RAG_Asai_2023",
+          "question": "How does Self-RAG improve factuality over standard RAG?",
+          "split": "eval"
+        }
+      ]
+    }
+  }
+}
