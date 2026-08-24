@@ -1,5 +1,5 @@
 """
-Offline library pipeline for downloaded government PDFs.
+Offline library pipeline for downloaded research papers PDFs.
 
 Flow per PDF:
   preprocess → layout extract → layout .txt
@@ -216,7 +216,7 @@ def process_library(skip_summary: bool = False) -> dict:
     pdfs = list_library_pdfs()
     if not pdfs:
         raise RuntimeError(
-            f"No PDFs in {Config.PDF_FOLDER_PATH}. Add government PDFs there first."
+            f"No PDFs in {Config.PDF_FOLDER_PATH}. Add  PDFs there first."
         )
 
     _ensure_dirs()

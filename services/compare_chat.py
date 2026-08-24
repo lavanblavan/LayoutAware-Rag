@@ -234,7 +234,7 @@ def _llm_answer(
 
     system_prompt = (
 
-        "You are a helpful assistant for Sri Lankan government and legal documents.\n"
+        "You are a helpful assistant for reseach related question  from research paper.\n"
 
         "Answer ONLY from the excerpts below. If the answer is not supported, say so clearly.\n"
 
