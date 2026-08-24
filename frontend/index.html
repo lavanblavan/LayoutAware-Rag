@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PaperRAG — Research Paper Q&amp;A</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true"></div>
+
+  <div class="shell">
+    <header class="top">
+      <div class="top-row">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <h1 class="brand-name">PaperRAG</h1>
+            <p class="tagline">Ask questions across indexed ML &amp; RAG research papers.</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <div class="status-pill" id="docMeta">
+            <span class="status-dot" id="statusDot" data-status="idle"></span>
+            <span class="doc-status" id="docStatus">Checking…</span>
+          </div>
+          <button type="button" class="ghost-btn ghost-btn-sm" id="processBtn">Rebuild index</button>
+          <a class="nav-link" href="/chat.html">Fine-tuned chat</a>
+          <a class="nav-link" href="/finetuned.html">Compare demo</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="stage stage-single">
+      <section class="chat-panel" aria-label="Research paper chat">
+        <div class="messages" id="messages" role="log" aria-live="polite"></div>
+
+        <form class="composer" id="chatForm">
+          <textarea
+            id="questionInput"
+            rows="1"
+            placeholder="Ask a question about the research papers…"
+            autocomplete="off"
+          ></textarea>
+          <button type="submit" id="sendBtn" disabled>
+            <span>Ask</span>
+          </button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

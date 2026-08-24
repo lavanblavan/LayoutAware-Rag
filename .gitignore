@@ -1,0 +1,39 @@
+# Secrets — never commit
+settings/.env
+.env
+*.env
+!.env.example
+!settings/.env.example
+
+# Documents, indexes, models (generated locally — see README)
+Documents/
+Database/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# IDE / editor
+.cursor/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Training checkpoints & large layout weights (auto-downloaded on first run)
+checkpoints/
+Summarizer/models/PubLayNet/**/model_final.pth
+Summarizer/models/PubLayNet/**/*.part
+
+# Local session uploads
+Documents/session/
