@@ -114,8 +114,7 @@ python services/rate_retrieval.py --split test
 # 30 unseen questions — base vs fine-tuned
 python services/compare_new30_finetune.py
 
-# Layout vs HDBSCAN chunk comparison (for demos)
-python services/demo_chunk_compare.py
+
 ```
 
 Reports are written to `Documents/finetune/export/`.
